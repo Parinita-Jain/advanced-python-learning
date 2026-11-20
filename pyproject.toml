@@ -1,0 +1,6 @@
+[project]
+name = "advanced-python-learning"
+version = "0.1.0"
+description = "Mini projects for learning advanced Python and concurrency"
+requires-python = ">=3.11"
+dependencies = []
