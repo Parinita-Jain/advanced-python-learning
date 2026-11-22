@@ -3,7 +3,7 @@ Objective: Learn how to execute multiple blocking I/O operations concurrently us
 
 We'll simulate downloading three files from different servers.
 """
-
+"""
 
 import time
 from pathlib import Path
@@ -62,6 +62,7 @@ def main():
 if __name__ == "__main__":
     main()
 
+"""
 """
 We use threads here instead of async/await because Python’s standard file operations (file_path.read_text()) are strictly synchronous and blocking—the operating system does not provide true cross-platform asynchronous disk file I/O for standard Python.
 And yes, you can await a ThreadPoolExecutor inside an async function using asyncio.to_thread() or loop.run_in_executor().
@@ -134,3 +135,125 @@ Would you like to see:
 • How to combine network async downloads + threaded disk writes in a single pipeline
 
 """
+"""
+two ways of collecting results from concurrent tasks:
+1. executor.map() — collects results in the same order as the input files.
+2. as_completed() — collects results in the order in which tasks finish.
+"""
+
+"""
+import time
+from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor
+
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+FILE_FOLDER = PROJECT_ROOT / "sample_files"
+
+
+def read_file(file_path):
+
+    print(f"Starting: {file_path.name}")
+
+    # Simulate I/O delay
+    delays = {
+        "file1.txt": 3,
+        "file2.txt": 1,
+        "file3.txt": 2
+    }
+
+    time.sleep(delays[file_path.name])
+
+    content = file_path.read_text(encoding="utf-8")
+
+    print(f"Finished: {file_path.name}")
+
+    return file_path.name, content
+
+
+def main():
+
+    files = [
+        FILE_FOLDER / "file1.txt",
+        FILE_FOLDER / "file2.txt",
+        FILE_FOLDER / "file3.txt"
+    ]
+
+    start = time.perf_counter()
+
+    with ThreadPoolExecutor(max_workers=3) as executor:
+
+        results = executor.map(read_file, files)
+
+        for filename, content in results:
+            print(f"\nResult received: {filename}")
+            print(content)
+
+    print(f"\nTotal time: {time.perf_counter() - start:.2f} seconds")
+
+
+if __name__ == "__main__":
+    main()
+
+"""
+
+
+import time
+from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor,as_completed
+
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+FILE_FOLDER = PROJECT_ROOT / "sample_files"
+
+
+def read_file(file_path):
+
+    print(f"Starting: {file_path.name}")
+
+    # Simulate I/O delay
+    delays = {
+        "file1.txt": 3,
+        "file2.txt": 1,
+        "file3.txt": 2
+    }
+
+    time.sleep(delays[file_path.name])
+
+    content = file_path.read_text(encoding="utf-8")
+
+    print(f"Finished: {file_path.name}")
+
+    return file_path.name, content
+
+
+
+def main():
+
+    files = [
+        FILE_FOLDER / "file1.txt",
+        FILE_FOLDER / "file2.txt",
+        FILE_FOLDER / "file3.txt"
+    ]
+
+    start = time.perf_counter()
+
+    with ThreadPoolExecutor(max_workers=3) as executor:
+
+        futures = [
+            executor.submit(read_file, file)
+            for file in files
+        ]
+
+        for future in as_completed(futures):
+
+            filename, content = future.result()
+
+            print(f"\nResult received: {filename}")
+            print(content)
+
+    print(f"\nTotal time: {time.perf_counter() - start:.2f} seconds")
+
+
+if __name__ == "__main__":
+    main()
