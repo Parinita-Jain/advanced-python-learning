@@ -1,0 +1,2 @@
+Python provides ThreadPoolExecutor.
+It helps manage a pool of worker threads.

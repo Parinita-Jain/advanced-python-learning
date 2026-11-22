@@ -1,0 +1,2 @@
+Threading allows multiple tasks to run concurrently.
+It is particularly useful for I/O-bound operations.
