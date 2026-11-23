@@ -257,3 +257,35 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+"""
+Now results are collected as each task completes.
+
+Expected result order:
+Order	File	Duration
+1	file2.txt	1 second
+2	file3.txt	2 seconds
+3	file1.txt	3 seconds
+
+as_completed() returns an iterator that yields Future objects as their tasks finish.
+
+We call:
+future.result()
+
+
+
+to retrieve the result of each completed task.
+
+Part 3 — Compare the two approaches
+Feature	executor.map()	as_completed()
+Result order	Input order	Completion order
+Uses Future objects explicitly?	No	Yes
+Retrieves results	Iteration	future.result()
+Best suited for	Ordered results	Processing results immediately
+Exception handling	Raised when corresponding result is retrieved	Raised when calling that Future's result()
+
+When would you use each?
+- executor.map(): Reading multiple CSV files when you want results to correspond to the original file list.
+- as_completed(): Calling multiple APIs when you want to process whichever response arrives first.
+"""
