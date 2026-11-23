@@ -172,6 +172,7 @@ asyncio.run(main())
 
 '''
 #---------------------
+"""
 import asyncio
 class DatabaseConnection:
     async def __aenter__(self):
@@ -193,3 +194,84 @@ async def main():
         data=await db.fetch_data()
         print("Result :",data)
 asyncio.run(main()) 
+
+"""
+#-----------
+from pydantic import BaseModel
+
+class Employee(BaseModel):
+    id:int
+    name:str
+emp_data={"id":1,"name":"Apple"}
+emp1=Employee(**emp_data)
+print(emp1)
+
+"""
+Step 5: Understand what happened
+- BaseModel is the foundation of Pydantic models.
+- We defined the expected fields and their types.
+- Employee(**employee_data) passes the dictionary values as keyword arguments.
+- Pydantic validates the incoming values and converts compatible types where possible.
+- salary was supplied as an integer but parsed as a float.
+Important distinction:
+
+A Python dataclass primarily provides convenient data structures. Pydantic models additionally provide runtime data validation and parsing.
+
+"""
+"""
+from pydantic import BaseModel, ConfigDict
+
+class Employee(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    age: int
+emp1 = Employee(age=30)
+print(emp1)
+
+emp2 = Employee(age="30")
+print(emp2)
+
+"""
+#--------------------------
+
+from pydantic import BaseModel, Field, ValidationError
+
+
+class Employee(BaseModel):
+    name: str = Field(min_length=2, max_length=50)
+    age: int = Field(ge=18, le=60)
+    salary: float = Field(gt=0)
+
+
+try:
+    employee = Employee(
+        name="Rahul",
+        age=30,
+        salary=55000
+    )
+
+    print(employee)
+
+except ValidationError as e:
+    print(e)
+
+"""
+Step 2: Understand the constraints
+Constraint	Meaning
+min_length=2	Minimum 2 characters
+max_length=50	Maximum 50 characters
+ge=18	Greater than or equal to 18
+le=60	Less than or equal to 60
+gt=0	Strictly greater than zero
+"""
+
+from pydantic import BaseModel
+
+class Employee(BaseModel):
+    name: str
+    age: int
+    department: str | None = None
+
+emp = Employee(name="Rahul", age=30)
+
+print(emp.department)
