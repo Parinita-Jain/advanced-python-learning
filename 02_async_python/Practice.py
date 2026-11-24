@@ -264,7 +264,7 @@ ge=18	Greater than or equal to 18
 le=60	Less than or equal to 60
 gt=0	Strictly greater than zero
 """
-
+"""
 from pydantic import BaseModel
 
 class Employee(BaseModel):
@@ -275,3 +275,86 @@ class Employee(BaseModel):
 emp = Employee(name="Rahul", age=30)
 
 print(emp.department)
+
+"""
+#---------------------
+"""
+from pydantic import BaseModel,Field
+from fastapi import FastAPI
+class EmployeeCreate(BaseModel):
+    name:str=Field(min_length=4,max_length=50)
+    age:int=Field(ge=18,le=60)
+    department:str
+app=FastAPI(title ="Employee Management System")
+employees=[]
+@app.get("/")
+def home():
+    return {"message":"Welcome to Employee Management System"}
+
+@app.post("/employees")
+def create_employee(employee:EmployeeCreate):
+    new_employee=employee.model_dump()
+    new_employee["id"]=len(employees)+1
+    employees.append(new_employee)
+    return new_employee
+
+@app.get("/employees")
+def get_employees():
+    return employees
+"""
+#------------
+from fastapi import FastAPI,HTTPException
+from pydantic import BaseModel,Field
+app=FastAPI(title="Employee Management System")
+class EmployeeCreate(BaseModel):
+    name:str=Field(min_length=1,max_length=20)
+    id:int=Field(le=100)
+    department:str
+emps=[]
+@app.get("/")
+def home():
+    return {"message":"Hello Employees"}
+@app.post("/EmployeeInput")
+def employeeInput(employee:EmployeeCreate):
+    new_employee=employee.model_dump()
+    new_employee["id"]=len(emps)+1
+    emps.append(new_employee)
+    return f"{new_employee} Added"
+@app.get("/All_employees")
+def all_employees():
+    return emps
+
+@app.get("/ParticularEmployee/{id}")
+def particular_id(id:int):
+    for e in emps:
+        if e["id"]==id:
+            return e
+    return {"message":"employee not found"}
+
+@app.get("/ParticularDepartment")
+def dept(d:str|None=None):
+    if d:
+        return [i for i in emps if i["department"].lower()==d.lower()]
+    return emps
+@app.get("/employeesHTTPException/{employee_id}")
+def get_employee(employee_id: int):
+    for employee in emps:
+        if employee["id"] == employee_id:
+            return employee
+
+    raise HTTPException(
+        status_code=404,
+        detail="Employee not found"
+    )
+
+"""
+Step 3 — Test in Swagger
+- Request /employees/2 — should return HTTP 200.
+- Request /employees/100 — should return HTTP 404.
+Understand the difference
+Status code	Meaning
+200	Request successful
+404	Requested resource not found
+422	Input validation failed
+500	Internal server error
+"""
