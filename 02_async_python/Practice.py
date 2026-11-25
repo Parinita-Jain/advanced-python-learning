@@ -303,6 +303,7 @@ def get_employees():
     return employees
 """
 #------------
+"""
 from fastapi import FastAPI,HTTPException
 from pydantic import BaseModel,Field
 app=FastAPI(title="Employee Management System")
@@ -346,7 +347,7 @@ def get_employee(employee_id: int):
         status_code=404,
         detail="Employee not found"
     )
-
+"""
 """
 Step 3 — Test in Swagger
 - Request /employees/2 — should return HTTP 200.
@@ -357,4 +358,89 @@ Status code	Meaning
 404	Requested resource not found
 422	Input validation failed
 500	Internal server error
+"""
+#-----------
+"""
+from enum import Enum,auto
+COMPANY_NAME = "ABC Technologies"
+MAX_EMPLOYEES = 100
+MINIMUM_AGE = 18
+class Department(Enum):
+    HR = "Human Resources"
+    IT = "Information Technology"
+    FINANCE = "Finance"
+    SALES = "Sales"
+class EmployeeStatus(Enum):
+    ACTIVE = "Active"
+    INACTIVE = "Inactive"
+    ON_LEAVE = "On Leave"
+class TaskStatus(Enum):
+    PENDING = auto()
+    RUNNING = auto()
+    COMPLETED = auto()
+    FAILED = auto()
+class Employee:
+    def __init__(self,name,department,status=EmployeeStatus.ACTIVE):
+        self.name=name
+        self.department=department
+        self.status=status
+    def display_details(self):
+            print(f"Company: {COMPANY_NAME}")
+            print(f"Employee: {self.name}")
+            print(f"Department: {self.department.value}")
+            print(f"Status: {self.status.value}")
+emp1 = Employee("Rahul", Department.IT)
+
+emp2 = Employee(
+    "Priya",
+    Department.HR,
+    EmployeeStatus.ON_LEAVE
+)
+
+emp3 = Employee(
+    "Amit",
+    Department.FINANCE,
+    EmployeeStatus.INACTIVE
+)
+
+"""
+#---------------
+from enum import Enum
+from pydantic import BaseModel
+from fastapi import FastAPI
+
+app=FastAPI(title = "Employee Enum API")
+
+class Department(str,Enum):
+    HR="HR"
+    IT="IT"
+    Finance="FINANCE"
+    SALES = "SALES"
+
+class EmployeeStatus(str,Enum):
+    ACTIVE = "ACTIVE"
+    INACTIVE = "INACTIVE"
+    ON_LEAVE = "ON_LEAVE"
+
+class EmployeeCreate(BaseModel):
+    name:str
+    department : Department
+    status : EmployeeStatus=EmployeeStatus.Active
+
+@app.post("/employees")
+def create_employees(employee: EmployeeCreate):
+    return {
+        "name" : employee.name,
+        "department" : employee.department.value,
+        "status":employee.status.value
+    }
+
+@app.get("/departments")
+def get_departments():
+
+    return [department.value for department in Department]
+
+"""
+Yes, return employee.model_dump() (or even return employee) works cleanly here, and
+ status: EmployeeStatus = EmployeeStatus.ACTIVE makes the field optional with a default value.
 """
